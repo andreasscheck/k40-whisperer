@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>K40 Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23e5484d'/><path d='M8 24 L16 8 L24 24' stroke='white' stroke-width='3' fill='none'/></svg>" />
+    <link rel="stylesheet" href="/src/ui/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <aside class="sidebar">
+        <header class="brand">
+          <div class="logo">K40</div>
+          <div>
+            <div class="title">K40 Web</div>
+            <div class="subtitle">Lasersteuerung für M2-Nano</div>
+          </div>
+        </header>
+
+        <section class="card">
+          <h2>Laser</h2>
+          <div class="conn">
+            <span id="connDot" class="dot"></span>
+            <span id="connText">Nicht verbunden</span>
+          </div>
+          <div class="row">
+            <button id="btnConnect" class="primary">Laser verbinden</button>
+            <button id="btnDisconnect" class="ghost" hidden>Trennen</button>
+          </div>
+          <div class="row three">
+            <button id="btnHome" title="Kopf in die Ausgangsposition fahren (oben links)">Home</button>
+            <button id="btnUnlock" title="Motoren stromlos schalten – Kopf kann von Hand bewegt werden">Entriegeln</button>
+            <button id="btnStatus" title="Status abfragen">Status</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Position</h2>
+          <div class="jog">
+            <div class="pad">
+              <span></span><button data-jog="0,-1" title="Hoch (↑)">▲</button><span></span>
+              <button data-jog="-1,0" title="Links (←)">◀</button>
+              <button id="btnCenterHead" title="Kopf zur Design-Ecke oben links (Startpunkt)">◎</button>
+              <button data-jog="1,0" title="Rechts (→)">▶</button>
+              <span></span><button data-jog="0,1" title="Runter (↓)">▼</button><span></span>
+            </div>
+            <div class="jogside">
+              <label>Schritt <span class="unit">mm</span><input id="jogStep" type="number" min="0.1" step="0.1" value="10" /></label>
+              <div class="corners">
+                <button data-corner="tl" title="Kopf zur Ecke oben links">⌜</button>
+                <button data-corner="tr" title="Kopf zur Ecke oben rechts">⌝</button>
+                <button data-corner="c" title="Kopf zur Mitte">＋</button>
+                <button data-corner="bl" title="Kopf zur Ecke unten links">⌞</button>
+                <button data-corner="br" title="Kopf zur Ecke unten rechts">⌟</button>
+              </div>
+            </div>
+          </div>
+          <div class="goto">
+            <label>X <input id="gotoX" type="number" step="0.1" value="0" /></label>
+            <label>Y <input id="gotoY" type="number" step="0.1" value="0" /></label>
+            <button id="btnGoto" title="Design (und Kopf) an diese Position setzen">Setzen</button>
+          </div>
+          <div class="hint" id="posText"></div>
+        </section>
+
+        <section class="card">
+          <h2>Auftrag</h2>
+          <table class="ops">
+            <thead>
+              <tr><th></th><th>Vorgang</th><th>mm/s</th><th>Durchg.</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" id="opRaster" /></td>
+                <td><span class="sw raster"></span>Raster-Gravur<div class="sub" id="infoRaster">–</div></td>
+                <td><input id="rasterFeed" type="number" min="1" step="1" /></td>
+                <td><input id="rasterPasses" type="number" min="1" step="1" /></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" id="opEngrave" /></td>
+                <td><span class="sw engrave"></span>Vektor-Gravur<div class="sub" id="infoEngrave">–</div></td>
+                <td><input id="engraveFeed" type="number" min="0.1" step="0.5" /></td>
+                <td><input id="engravePasses" type="number" min="1" step="1" /></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" id="opCut" /></td>
+                <td><span class="sw cut"></span>Vektor-Schnitt<div class="sub" id="infoCut">–</div></td>
+                <td><input id="cutFeed" type="number" min="0.1" step="0.5" /></td>
+                <td><input id="cutPasses" type="number" min="1" step="1" /></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row">
+            <button id="btnStart" class="go">▶ Start</button>
+            <button id="btnStop" class="stop" disabled>■ Stopp</button>
+          </div>
+          <div class="hint" id="estimate"></div>
+        </section>
+
+        <details class="card" id="settingsCard">
+          <summary><h2>Einstellungen</h2></summary>
+          <div class="settings">
+            <label>Controller-Board
+              <select id="board">
+                <option>M2</option><option>M1</option><option>M</option><option>B2</option><option>B1</option><option>B</option><option>A</option>
+              </select>
+            </label>
+            <label>Arbeitsbereich Breite <span class="unit">mm</span><input id="bedW" type="number" min="10" /></label>
+            <label>Arbeitsbereich Höhe <span class="unit">mm</span><input id="bedH" type="number" min="10" /></label>
+            <hr />
+            <label>Raster-Zeilenabstand
+              <select id="rasterStep">
+                <option value="1">0,025 mm (1000 dpi)</option>
+                <option value="2">0,05 mm (500 dpi)</option>
+                <option value="3">0,076 mm (333 dpi)</option>
+                <option value="4">0,1 mm (250 dpi)</option>
+                <option value="5">0,127 mm (200 dpi)</option>
+              </select>
+            </label>
+            <label>Raster-Modus
+              <select id="rasterMode">
+                <option value="threshold">Schwarz/Weiß (Schwellwert)</option>
+                <option value="dither">Graustufen (Dithering)</option>
+              </select>
+            </label>
+            <label>Schwellwert <input id="threshold" type="range" min="1" max="254" /></label>
+            <label>Helligkeit (Gamma) <input id="gamma" type="number" min="0.2" max="5" step="0.1" /></label>
+            <label class="check"><input type="checkbox" id="invert" /> Raster invertieren</label>
+            <label class="check"><input type="checkbox" id="bottomUp" /> Raster von unten nach oben</label>
+            <hr />
+            <label class="check"><input type="checkbox" id="mirror" /> Design spiegeln</label>
+            <label class="check"><input type="checkbox" id="rotate" /> Design um 90° drehen</label>
+            <label>Bild-Auflösung (PNG/JPG) <span class="unit">dpi</span><input id="imageDpi" type="number" min="10" /></label>
+            <label class="check"><input type="checkbox" id="insideFirst" /> Innere Konturen zuerst / Wege optimieren</label>
+            <label class="check"><input type="checkbox" id="waitFinish" /> Warten, bis der Laser fertig ist</label>
+            <hr />
+            <label>Kalibrierung X <input id="scaleX" type="number" step="0.001" /></label>
+            <label>Kalibrierung Y <input id="scaleY" type="number" step="0.001" /></label>
+            <label>USB-Timeout <span class="unit">ms</span><input id="timeoutMs" type="number" min="50" /></label>
+          </div>
+        </details>
+      </aside>
+
+      <main class="main">
+        <div class="toolbar">
+          <label class="filebtn primary">
+            <input id="fileInput" type="file" accept=".svg,.png,.jpg,.jpeg,.bmp,.gif,.webp,image/*" hidden />
+            Datei öffnen
+          </label>
+          <button id="btnReload" disabled title="Datei neu laden (nach Änderungen im Zeichenprogramm)">Neu laden</button>
+          <span class="filename" id="fileName">Keine Datei geladen – SVG oder Bild hierher ziehen</span>
+          <span class="spacer"></span>
+          <label class="check toggle"><input type="checkbox" id="showSim" /> Pfad-Simulation</label>
+          <button id="btnExport" disabled title="Als .EGV-Datei speichern (z.B. zur Kontrolle oder für LaserDRW)">EGV speichern</button>
+        </div>
+        <div class="stage" id="stage">
+          <canvas id="canvas"></canvas>
+          <div class="drop" id="drop">Datei loslassen zum Öffnen</div>
+        </div>
+        <div class="warnings" id="warnings" hidden></div>
+        <footer class="status" id="statusBar">
+          <span id="statusText">Bereit.</span>
+          <div class="progress"><div id="progress"></div></div>
+        </footer>
+      </main>
+    </div>
+    <dialog id="dlg">
+      <form method="dialog">
+        <p id="dlgText"></p>
+        <div class="row">
+          <button value="cancel" id="dlgCancel">Fortsetzen</button>
+          <button value="ok" class="stop" id="dlgOk">Auftrag abbrechen</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
