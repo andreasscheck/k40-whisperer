@@ -32,6 +32,16 @@ npm run dev        # Entwicklung: http://localhost:5173
 4. Vorgänge anhaken, Geschwindigkeit (mm/s) und Durchgänge einstellen → **Start**.
    **Stopp** pausiert sofort und fragt dann: abbrechen (Not-Halt) oder fortsetzen.
 
+### Verbindungsstatus
+
+Der Punkt in der Karte „Laser“ zeigt den Zustand:
+grau = nicht verbunden (Simulation), grün = verbunden, orange = Auftrag läuft,
+rot = verbunden, aber der Controller antwortet nicht (z. B. Laser ausgeschaltet).
+Im Leerlauf fragt die App alle 3 Sekunden den Status ab. Wird der Laser eingesteckt oder eingeschaltet,
+verbindet sie sich automatisch neu (wenn er in Chrome schon einmal freigegeben wurde) – danach „Home“ drücken.
+
+### Vorschau und Export
+
 „Pfad-Simulation“ zeigt vorab genau die Wege, die an den Laser gehen (dekodiert aus den echten
 Befehlsdaten) inkl. geschätzter Dauer. Ohne angeschlossenen Laser funktioniert alles außer dem Senden.
 „EGV speichern“ erzeugt eine .EGV-Datei (kompatibel zu K40 Whisperer/LaserDRW).

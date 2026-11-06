@@ -1,128 +1,68 @@
-# K40 Whisperer
+# K40 Web (Fork von K40 Whisperer)
 
-[Download](https://github.com/stephenhouser/k40-whisperer/releases) the latest macOS package.
+Steuerungssoftware für K40-Laser mit **M2-Nano**-Controller (sowie M1, M, B2, B1, B, A),
+die auf **aktuellen Macs** läuft – auch auf Apple Silicon.
 
-Packaging of Scorchworks K40 Whisperer as an OSX Application.
+Dieser Fork enthält eine Neuentwicklung im Ordner [`k40-web/`](k40-web/):
+eine Web-App in TypeScript, die im Browser (**Google Chrome** oder Microsoft Edge) läuft und per
+**WebUSB** direkt mit dem Laser spricht. Python, libusb, XQuartz und Inkscape werden nicht mehr benötigt –
+genau an diesen Abhängigkeiten scheitert die ursprüngliche K40-Whisperer-App auf neueren macOS-Versionen.
 
-> K40 Whisperer is an alternative to the the Laser Draw (LaserDRW) program that comes with the cheap Chinese laser cutters available on E-Bay and Amazon. K40 Whisperer reads SVG and DXF files,interprets the data and sends commands to the K40 controller to move the laser head and control the laser accordingly. K40 Whisperer does not require a USB key (dongle) to function.
+## Schnellstart
 
-![K40 Whisperer Main](K40_Whisperer_Main.png?raw=true)
+Voraussetzungen: [Node.js](https://nodejs.org) (z. B. `brew install node`) und Google Chrome.
 
-The official K40 Whisperer and instructions are at Scorchworks:
-
-> http://www.scorchworks.com/K40whisperer/k40whisperer.html
-
-This fork is to add packaging and minor fixes to work on macOS systems, creating a clickable application that can be installed on any macOS system. This eliminates having to run K40 Whisperer from a Terminal prompt.
-
-## Running The Packaged Application
-
-K40 Whisperer requires a few dependencies that are not installed as part of the application bundle. You will need to install these yourself to have a functioning application.
-
-* [Homebrew](https://brew.sh/) Not required but **strongly recomended**
-* [libusb](https://libusb.info) for access to the USB port(s)
-* [inkscape](https://inkscape.org) for drawing and rasterization
-
-These dependencies are best installed with [Homebrew](https://brew.sh/) in a `Terminal` window as follows. This only needs to be done once on your system.
-
-```
-# Install HomeBrew (only if you don't have it)
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-# Install Dependencies
-brew install libusb
-brew cask install xquartz
-brew cask install inkscape
+```bash
+git clone -b k40-web https://github.com/andreasscheck/k40-whisperer.git
 ```
 
-You need not read any further in this document. You should be able to run K40 Whisperer.
+Dann im Finder `k40-whisperer/k40-web/start.command` doppelklicken (beim ersten Mal: Rechtsklick → Öffnen).
+Die App öffnet sich in Chrome unter <http://localhost:4173>. Alternativ im Terminal:
 
-## macOS Build/Update Process Overview
-
-This fork adds the following files to Scorch's work
-
-* `build-macOS.sh` -- bash build script to build and create application bundle.
-* `update-macOS.sh` -- bash script to patch a new version of K40 Whisperer and bundle it.
-* `k40_whisperer.spec` -- application specification for PyInstaller.
-* `emblem.icns` -- Icons for macOS application bundle (made with `sips`)
-* `macOS.patch` -- tweaks to Scorch's source for macOS
-
-When a new source package is released by Scorch, the general update process is.
-
-1. Download and extract the new source code
-2. Check this repository out into a working directory
-3. Run `update_macOS.sh` with the address of the latest source archive
-4. *poof* out comes a disk image (`.dmg` file) with the new bundled version.
-5. Don't forget to test it!
-
-Most of this is handled by the `update_macOS.sh` script. Here's my process... and my likely future copy and paste.
-
-```
-# Get this repository
-git clone https://github.com/stephenhouser/k40_whisperer.git
-cd k40_whisperer
-
-# Download, apply patches, build the application
-./update_macOS.sh -u https://www.scorchworks.com/K40whisperer/K40_Whisperer-0.56_src.zip
-
-# Test/Fix/Test...(needs some work)
-...
-open ./dist/K40\ Whisperer v0.56.app
-...
-
-# Move newly generated patch file into place
-mv macOS-0.56.patch macOS.patch
-
-# Commit and push back to GitHub
-git commit -a -m"Update to v0.56"
-git tag v0.56
-git push --follow-tags
+```bash
+cd k40-whisperer/k40-web
+npm install
+npm run dev
 ```
 
-## macOS Build/Update Process Details
+Bedienung, Technik und Fehlersuche: siehe [`k40-web/README.md`](k40-web/README.md).
 
-*** These directions may be outdated, please check the `build-macOS.sh` script for the current details.***
+## Funktionen
 
-In the main directory run `build-macOS.sh`. This will create a clickable macOS Application in the `./dist` directory named `K40 Whisperer.app` that can then be distributed or moved to your Applications folder. See the following sections for details based on your chosen Python version.
+- SVG, PNG und JPG öffnen (auch per Drag & Drop) – Farbkonvention wie bei K40 Whisperer:
+  rote Kontur = Schneiden, blaue Kontur = Vektor-Gravur, alles andere = Raster-Gravur
+- Raster in Schwarz/Weiß oder Graustufen (Dithering), Zeilenabstand 0,025–0,127 mm
+- Design per Maus auf der Arbeitsfläche positionieren, Joggen, Design-Ecken anfahren
+- Innere Konturen zuerst schneiden, Leerfahrten optimieren, mehrere Durchgänge
+- Pfad-Simulation mit Laufzeitschätzung, Export als `.EGV`
+- Pause / Abbruch mit Not-Halt, Verbindungsstatus mit automatischem Wiederverbinden
 
-If you are using one of the most excellent [Homebrew](https://brew.sh/) versions of Python, you are not only a wonderful person, but life will be easy for you. This build process has been tested *mostly* on Python 3.7.2 and Python 2.7.15 using [pyenv](https://github.com/pyenv/pyenv).
+## Kompatibilität zum Original
 
-NOTE: When installing Python with `pyenv`, you should use the `--enable-framework` flag so that Python can get properly bundled with the application.
+Das Laserprotokoll (EGV-Befehle, Geschwindigkeitscodes, USB-Pakete mit CRC) wurde aus K40 Whisperer
+portiert. Automatische Tests vergleichen die erzeugten Daten **Byte für Byte** mit dem Python-Original
+in diesem Repository (`egv.py`, `LaserSpeed.py`, `nano_library.py`):
 
-### Python 3.9.1
-
-Set up Python 3.9.1 with `HomeBrew` and `pyenv`. Something like the following should work
-
-```
-# Install HomeBrew (only if you don't have it)
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-# Install Dependencies (only if you haven't done this already)
-brew install libusb
-brew cask install xquartz
-brew cask install inkscape
-brew install pyenv
-
-# Install Python 3.9.1 with pyenv and set it as the default Python
-PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.7.2
-pyenv global 3.7.2
-pyenv rehash
+```bash
+cd k40-web && npm test
 ```
 
-Then running the build should work. If not, well, there should be a lot of error messages to help you track things down.
+**Status:** Die Software ist noch nicht ausführlich an echter Hardware erprobt. Erste Tests bitte mit
+niedriger Leistung durchführen und vorher mit den Ecken-Knöpfen den Rahmen abfahren.
 
-```
-./build-macOS.sh
-```
+Noch nicht übernommen: DXF- und G-Code-Import, Rotationsachse, „Home oben rechts“, Umriss-Abfahrt.
 
-### Vagrant buildfile
+## Ursprüngliche K40-Whisperer-Dateien
 
-Included is a `vagrant` build setup as well. It's not well tested but seems to mostly work. If nothing else it has the dependency information built into it.
+Die Python-Quellen von K40 Whisperer (Scorchworks) und die macOS-Paketierung von
+[stephenhouser/k40-whisperer](https://github.com/stephenhouser/k40-whisperer)
+(`build-macOS.sh`, `update-macOS.sh`, `k40_whisperer.spec`, `macOS.patch` …) liegen unverändert im
+Hauptverzeichnis. Sie dienen hier als Referenz für die Tests; die Anleitung zum Bauen der alten App
+steht im Upstream-Repository.
 
-```
-host$ vagrant up                # takes a long time
-host$ vagrant ssh
-vagrant$ cd /vagrant
-vagrant$ ./build-macOS.sh       # run the build on the vagrant guest
-vagrant$ exit
-host$ ls -l dist/*              # the `.app` will show up here.
-```
+Original-Software und Dokumentation: <https://www.scorchworks.com/K40whisperer/k40whisperer.html>
+
+## Lizenz
+
+GPL-3.0 – siehe [`gpl-3.0.txt`](gpl-3.0.txt). K40 Whisperer stammt von Scorch (scorchworks.com),
+die macOS-Paketierung von Stephen Houser.
