@@ -36,30 +36,45 @@
         </section>
 
         <section class="card">
+          <h2>Objekte</h2>
+          <div class="shapebar">
+            <button data-add="rect" title="Rechteck mit optional runden Ecken">▭ Rechteck</button>
+            <button data-add="ellipse" title="Kreis oder Ellipse">◯ Kreis</button>
+            <button data-add="line" title="Gerade Linie mit Länge und Winkel">╱ Linie</button>
+            <button data-add="polygon" title="Regelmäßiges Vieleck">⬡ Vieleck</button>
+            <button data-add="frame" title="Rahmen um das ausgewählte Objekt (oder um alle) – zum Ausschneiden">⬚ Rahmen</button>
+            <button data-add="test" title="Testmuster: Felder mit steigender Geschwindigkeit">▦ Testmuster</button>
+          </div>
+          <ul class="items" id="itemList" hidden></ul>
+          <div class="hint" id="itemsEmpty">Noch keine Objekte – Datei öffnen oder eine Form hinzufügen.</div>
+          <div class="editor" id="itemEditor" hidden></div>
+        </section>
+
+        <section class="card">
           <h2>Position</h2>
           <div class="jog">
             <div class="pad">
               <span></span><button data-jog="0,-1" title="Hoch (↑)">▲</button><span></span>
               <button data-jog="-1,0" title="Links (←)">◀</button>
-              <button id="btnCenterHead" title="Kopf zur Design-Ecke oben links (Startpunkt)">◎</button>
+              <button id="btnCenterHead" title="Kopf zum Startpunkt (obere linke Ecke des Auftrags)">◎</button>
               <button data-jog="1,0" title="Rechts (→)">▶</button>
               <span></span><button data-jog="0,1" title="Runter (↓)">▼</button><span></span>
             </div>
             <div class="jogside">
               <label>Schritt <span class="unit">mm</span><input id="jogStep" type="number" min="0.1" step="0.1" value="10" /></label>
               <div class="corners">
-                <button data-corner="tl" title="Kopf zur Ecke oben links">⌜</button>
-                <button data-corner="tr" title="Kopf zur Ecke oben rechts">⌝</button>
-                <button data-corner="c" title="Kopf zur Mitte">＋</button>
-                <button data-corner="bl" title="Kopf zur Ecke unten links">⌞</button>
-                <button data-corner="br" title="Kopf zur Ecke unten rechts">⌟</button>
+                <button data-corner="tl" title="Kopf zur Ecke oben links des Auftrags">⌜</button>
+                <button data-corner="tr" title="Kopf zur Ecke oben rechts des Auftrags">⌝</button>
+                <button data-corner="c" title="Kopf zur Mitte des Auftrags">＋</button>
+                <button data-corner="bl" title="Kopf zur Ecke unten links des Auftrags">⌞</button>
+                <button data-corner="br" title="Kopf zur Ecke unten rechts des Auftrags">⌟</button>
               </div>
             </div>
           </div>
           <div class="goto">
             <label>X <input id="gotoX" type="number" step="0.1" value="0" /></label>
             <label>Y <input id="gotoY" type="number" step="0.1" value="0" /></label>
-            <button id="btnGoto" title="Design (und Kopf) an diese Position setzen">Setzen</button>
+            <button id="btnGoto" title="Ausgewähltes Objekt (ohne Auswahl: ganzen Auftrag) an diese Position setzen">Setzen</button>
           </div>
           <div class="hint" id="posText"></div>
         </section>
@@ -129,8 +144,8 @@
             <label class="check"><input type="checkbox" id="invert" /> Raster invertieren</label>
             <label class="check"><input type="checkbox" id="bottomUp" /> Raster von unten nach oben</label>
             <hr />
-            <label class="check"><input type="checkbox" id="mirror" /> Design spiegeln</label>
-            <label class="check"><input type="checkbox" id="rotate" /> Design um 90° drehen</label>
+            <label class="check"><input type="checkbox" id="mirror" /> Dateien spiegeln</label>
+            <label class="check"><input type="checkbox" id="rotate" /> Dateien um 90° drehen</label>
             <label>Bild-Auflösung (PNG/JPG) <span class="unit">dpi</span><input id="imageDpi" type="number" min="10" /></label>
             <label class="check"><input type="checkbox" id="insideFirst" /> Innere Konturen zuerst / Wege optimieren</label>
             <label class="check"><input type="checkbox" id="waitFinish" /> Warten, bis der Laser fertig ist</label>
@@ -147,6 +162,10 @@
           <label class="filebtn primary">
             <input id="fileInput" type="file" accept=".svg,.png,.jpg,.jpeg,.bmp,.gif,.webp,image/*" hidden />
             Datei öffnen
+          </label>
+          <label class="filebtn" title="Weitere Datei(en) zusätzlich auf den Arbeitsbereich legen">
+            <input id="fileAdd" type="file" multiple accept=".svg,.png,.jpg,.jpeg,.bmp,.gif,.webp,image/*" hidden />
+            ＋ Datei
           </label>
           <button id="btnReload" disabled title="Datei neu laden (nach Änderungen im Zeichenprogramm)">Neu laden</button>
           <span class="filename" id="fileName">Keine Datei geladen – SVG oder Bild hierher ziehen</span>

@@ -48,6 +48,9 @@ export interface RasterBits {
   rows: number;
   stepMils: number;
   bits: Uint8Array;
+  /** Lage der linken oberen Ecke relativ zum Auftragsursprung (1/1000 Zoll, y nach unten) */
+  offsetX?: number;
+  offsetY?: number;
 }
 
 // ---------------------------------------------------------------------------------- Vektoren
@@ -207,8 +210,10 @@ export function optimizePaths(ec: ECoord[], insideCheck: boolean): ECoord[] {
 export function rasterToEcoords(r: RasterBits): ECoord[] {
   const out: ECoord[] = [];
   let loop = 0;
+  const ox = r.offsetX ?? 0;
+  const oy = r.offsetY ?? 0;
   for (let row = 0; row < r.rows; row++) {
-    const y = -(row * r.stepMils) / 1000;
+    const y = -(row * r.stepMils + oy) / 1000;
     const base = row * r.width;
     let x = 0;
     while (x < r.width) {
@@ -219,7 +224,7 @@ export function rasterToEcoords(r: RasterBits): ECoord[] {
       let e = x;
       while (e < r.width && r.bits[base + e]) e++;
       loop++;
-      out.push([x / 1000, y, loop], [e / 1000, y, loop]);
+      out.push([(x + ox) / 1000, y, loop], [(e + ox) / 1000, y, loop]);
       x = e;
     }
   }
@@ -297,10 +302,14 @@ export function grayToBits(g: GrayRaster, p: RasterProcess): RasterBits {
 
 // ---------------------------------------------------------------------------------- Auftrag
 
+/** Zusatzteile mit eigener Geschwindigkeit (z.B. Testmuster) */
+export type ExtraPart = { op: 'raster'; bits: RasterBits; feed: number } | { op: 'engrave' | 'cut'; polys: Polyline[]; feed: number };
+
 export interface JobInput {
   cut?: Polyline[];
   engrave?: Polyline[];
   raster?: RasterBits | null;
+  extra?: ExtraPart[];
 }
 
 export interface JobOps {
@@ -315,32 +324,34 @@ export interface JobOps {
  */
 export function buildJob(input: JobInput, ops: JobOps, s: JobSettings): number[] {
   const parts: { data: number[]; passes: number }[] = [];
-  if (ops.raster && input.raster) {
-    const ec = rasterToEcoords(input.raster);
-    if (ec.length) {
-      const w = new EgvWriter();
-      const step = Math.round(input.raster.stepMils);
-      w.makeEgvData(ec, { feed: s.rasterFeed, board: s.board, rasterStep: s.rasterBottomUp ? step : -step });
-      parts.push({ data: stripRedundantCodes(w.out), passes: s.rasterPasses });
-    }
+  const extra = input.extra ?? [];
+  const rasterPart = (bits: RasterBits, feed: number) => {
+    const ec = rasterToEcoords(bits);
+    if (!ec.length) return;
+    const w = new EgvWriter();
+    const step = Math.round(bits.stepMils);
+    w.makeEgvData(ec, { feed, board: s.board, rasterStep: s.rasterBottomUp ? step : -step });
+    parts.push({ data: stripRedundantCodes(w.out), passes: s.rasterPasses });
+  };
+  const vectorPart = (polys: Polyline[], feed: number, passes: number, insideCheck: boolean) => {
+    let ec = polylinesToEcoords(polys, s.scaleX, s.scaleY);
+    if (!ec.length) return;
+    if (s.insideFirst) ec = optimizePaths(ec, insideCheck);
+    const w = new EgvWriter();
+    w.makeEgvData(ec, { feed, board: s.board });
+    parts.push({ data: w.out, passes });
+  };
+  if (ops.raster) {
+    if (input.raster) rasterPart(input.raster, s.rasterFeed);
+    for (const e of extra) if (e.op === 'raster') rasterPart(e.bits, e.feed);
   }
-  if (ops.engrave && input.engrave?.length) {
-    let ec = polylinesToEcoords(input.engrave, s.scaleX, s.scaleY);
-    if (ec.length) {
-      if (s.insideFirst) ec = optimizePaths(ec, false);
-      const w = new EgvWriter();
-      w.makeEgvData(ec, { feed: s.engraveFeed, board: s.board });
-      parts.push({ data: w.out, passes: s.engravePasses });
-    }
+  if (ops.engrave) {
+    if (input.engrave?.length) vectorPart(input.engrave, s.engraveFeed, s.engravePasses, false);
+    for (const e of extra) if (e.op === 'engrave') vectorPart(e.polys, e.feed, s.engravePasses, false);
   }
-  if (ops.cut && input.cut?.length) {
-    let ec = polylinesToEcoords(input.cut, s.scaleX, s.scaleY);
-    if (ec.length) {
-      if (s.insideFirst) ec = optimizePaths(ec, true);
-      const w = new EgvWriter();
-      w.makeEgvData(ec, { feed: s.cutFeed, board: s.board });
-      parts.push({ data: w.out, passes: s.cutPasses });
-    }
+  if (ops.cut) {
+    if (input.cut?.length) vectorPart(input.cut, s.cutFeed, s.cutPasses, true);
+    for (const e of extra) if (e.op === 'cut') vectorPart(e.polys, e.feed, s.cutPasses, true);
   }
   return joinJobParts(parts);
 }

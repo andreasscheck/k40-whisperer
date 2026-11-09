@@ -22,15 +22,31 @@ npm run dev        # Entwicklung: http://localhost:5173
 
 1. **Laser verbinden** → im Chrome-Dialog das Gerät „USB-EPP/I2C… CH341A“ (1a86:5512) wählen.
    Der Kopf fährt danach in die Ausgangsposition (oben links). Beim nächsten Start verbindet sich die App automatisch.
-2. **Datei öffnen** oder per Drag & Drop: SVG, PNG, JPG.
+2. **Datei öffnen** oder per Drag & Drop: SVG, PNG, JPG. „Datei öffnen“ ersetzt die bisherige Datei,
+   **＋ Datei** legt weitere Dateien zusätzlich auf den Arbeitsbereich.
    - Kontur **rot** (#FF0000) → Vektor-Schnitt
    - Kontur **blau** (#0000FF) → Vektor-Gravur
    - alles andere → Raster-Gravur (Schwarz/Weiß oder Graustufen per Dithering)
-3. Design positionieren: Pfeiltasten/Jog-Pad oder **mit der Maus auf der Arbeitsfläche ziehen**.
-   Der Laserkopf steht immer an der oberen linken Ecke des Designs (Startpunkt).
-   Mit den Ecken-Knöpfen fährt der Kopf die Ecken des Designs ab (Rahmen prüfen).
+3. Objekte positionieren: anklicken und **mit der Maus ziehen**, oder Pfeiltasten/Jog-Pad.
+   Ohne Auswahl (Esc oder Klick ins Leere) bewegen Pfeiltasten den ganzen Auftrag.
+   Der Kopf fährt zur oberen linken Ecke des verschobenen Objekts; der Auftrag startet an der
+   oberen linken Ecke aller Objekte (grünes Dreieck). Die Ecken-Knöpfe fahren den Auftrag ab.
 4. Vorgänge anhaken, Geschwindigkeit (mm/s) und Durchgänge einstellen → **Start**.
    **Stopp** pausiert sofort und fragt dann: abbrechen (Not-Halt) oder fortsetzen.
+
+### Formen
+
+In der Karte „Objekte“ lassen sich einfache Formen ohne Zeichenprogramm hinzufügen und
+über Maße einstellen: **Rechteck** (mit Eckenradius), **Kreis/Ellipse**, **Linie** (Länge, Winkel)
+und **Vieleck** – jeweils schneiden, gravieren oder (als Raster) füllen.
+
+- **Rahmen** legt ein Schnitt-Rechteck mit einstellbarem Abstand um das ausgewählte Objekt
+  (ohne Auswahl um alle) – z. B. um ein graviertes Teil direkt auszuschneiden. Der Rahmen
+  wandert mit seinem Objekt mit und passt sich an, wenn die Datei neu geladen wird.
+- **Testmuster**: eine Reihe Felder mit steigender Geschwindigkeit (gefüllt als Raster oder als
+  Quadrat-Linien), beschriftet mit der jeweiligen Geschwindigkeit. Die Leistung stellt man am
+  K40 am Poti ein.
+- Entfernen mit × in der Liste oder der Entf-Taste.
 
 ### Verbindungsstatus
 

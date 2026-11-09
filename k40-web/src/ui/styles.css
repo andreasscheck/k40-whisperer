@@ -452,3 +452,82 @@ dialog::backdrop {
 .dot.stale {
   background: var(--stop);
 }
+
+.shapebar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.shapebar button {
+  padding: 5px 4px;
+  font-size: 12px;
+}
+ul.items {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+ul.items li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 8px;
+  cursor: pointer;
+  border-top: 1px solid var(--line);
+}
+ul.items li:first-child {
+  border-top: none;
+}
+ul.items li:hover {
+  background: var(--btn);
+}
+ul.items li.sel {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+ul.items .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+ul.items .size {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+ul.items button.x {
+  border: none;
+  background: transparent;
+  padding: 0 6px;
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+ul.items button.x:hover:not(:disabled) {
+  color: var(--stop);
+  background: transparent;
+}
+.sw.file {
+  background: transparent;
+  border: 1.5px solid var(--muted);
+}
+.editor {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.edtitle {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.editor .settings label {
+  grid-template-columns: 1fr 110px;
+}
+.toolbar .filebtn {
+  display: inline-block;
+}

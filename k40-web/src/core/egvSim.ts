@@ -38,6 +38,8 @@ export function simulateEgv(data: ArrayLike<number>, board: BoardName = 'M2', ra
   let dirY = 1;
   let laser = false;
   let compact = false;
+  /** innerhalb eines mit S1E begonnenen Abschnitts */
+  let session = false;
   let rasterStep = 0;
   let speed = 10;
   let lastDir = '';
@@ -120,9 +122,16 @@ export function simulateEgv(data: ArrayLike<number>, board: BoardName = 'M2', ra
         break;
       case 'S': {
         i++;
-        if (data[i] === 49 /* 1 */) i++;
+        let one = false;
+        if (data[i] === 49 /* 1 */) {
+          one = true;
+          i++;
+        }
         if (data[i] === 69 /* E */) {
-          compact = true;
+          // "S1E" startet den Compact-Modus, "N…SE" setzt ihn nach einer Zwischenbewegung fort.
+          // Nach "@"/"F" (Teilende) ist er beendet – "@NSE" schaltet ihn nicht wieder ein.
+          if (one) session = true;
+          compact = session;
           i++;
         } else if (data[i] === 80 /* P */) {
           i++;
@@ -131,6 +140,8 @@ export function simulateEgv(data: ArrayLike<number>, board: BoardName = 'M2', ra
       }
       case '@':
       case 'F':
+        session = false;
+        compact = false;
         i++;
         break;
       case 'D':

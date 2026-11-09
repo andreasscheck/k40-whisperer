@@ -339,7 +339,7 @@ function canvasHasInk(c: HTMLCanvasElement): boolean {
  * Jede Zeile mittelt über ihre Zeilenhöhe (das SVG wird dafür nicht-proportional skaliert).
  */
 export async function renderRaster(
-  design: Design,
+  design: Pick<Design, 'widthMm' | 'heightMm' | 'rasterSvg'>,
   stepMils: number,
   scaleX: number,
   scaleY: number,
